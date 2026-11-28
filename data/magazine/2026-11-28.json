@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-28",
+  "generatedAt": "2026-11-28T17:56:19+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "생굴은 이제 못 먹는 음식? 노로바이러스, 역대 최고 빠르게 전파",
+    "summary": "겨울철 대표 감염병인 노로바이러스 환자가 다시 증가하고 있다.",
+    "source": "헬스조선",
+    "sourceId": "news-healthchosun",
+    "candidateId": "c_ab58c7187b370d8e",
+    "url": "https://health.chosun.com/site/data/html_dir/2026/11/27/2026112702187.html",
+    "medium": "news",
+    "discoveredAt": "2026-11-28T17:56:19+09:00",
+    "publishedAt": "2026-11-28T16:00:00+09:00",
+    "image": "https://health.chosun.com/site/data/img_dir/2026/11/27/2026112702182_0.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "아침 공복에 먹는 음식들… 뱃살-당뇨-고지혈증 동시에 생겼다, 뭘 먹었길래?",
+          "summary": "아침 공복에는 가장 먼저 물을 마신 후 채소를 먹는 게 좋다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4b7cbbab74b0c246",
+          "url": "https://kormedi.com/2914174/",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-27T19:01:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "당뇨, 심혈관 질환에 암까지…‘만병의 근원’ 염증 줄이는 식품",
+          "summary": "귤과 같은 감귤류 과일에는 비타민C와 플라보노이드가 풍부해 염증을 완화하는 데 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_e223b13c48e9e235",
+          "url": "https://kormedi.com/2914654/",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T11:05:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "식품위생 관리체계 정비…안전 강화하고, 영업자 부담 낮춘다",
+          "summary": "식품의약품안전처(처장 오유경)는 특수의료용도식품의 별도 관리체계 마련에 따른 세부 기준을 정하고, 모든 중요관리점(CCP)에 스마트 해썹을 적용하는 제조업체에 행정처분 경감 혜택을 부여하는 등의 내용을 담은…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_cb7b30164f1ca4e7",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201752",
+          "medium": "news",
+          "discoveredAt": "2026-11-27T18:35:45+09:00",
+          "publishedAt": "2026-11-27T11:01:28+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "중소기업·농가와 동반성장 결실…aT·삼양식품·우유자조금, ‘2026 올해의 상생기업 대상’",
+          "summary": "식품·농식품 업계가 중소기업·농어업인·소상공인과의 동반성장을 이끈 공로를 인정받아 ‘2026 올해의 상생기업 대상’에서 잇달아 정부포상과 장관 표창을 받았다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_b47e84a55359b956",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201748",
+          "medium": "news",
+          "discoveredAt": "2026-11-27T18:35:45+09:00",
+          "publishedAt": "2026-11-27T10:21:26+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "인체세포에 유전물질 추가…\"희귀질환 치료 확장\"",
+          "summary": "식품의약품안전처가 첨단재생의료 범위를 확대해 희귀질환 환자의 치료 범위 확장에 나선다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_b19866987f034e5e",
+          "url": "https://www.newsis.com/view/NISX20261127_0003885636",
+          "medium": "news",
+          "discoveredAt": "2026-11-27T18:35:45+09:00",
+          "publishedAt": "2026-11-27T09:33:56+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "시오콘부 오이무침 만들기｜5분 일본식 오이탕탕이 레시피",
+          "summary": "아삭한 오이에 짭짤하고 감칠맛 가득한 시오콘부를 더한 일본식 오이무침을 소개합니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_d5de13bd0e4c751d",
+          "url": "https://cultureagora.tistory.com/454",
+          "medium": "blog",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-27T22:12:29+09:00"
+        },
+        {
+          "title": "신상출시 편스토랑 야노시호 쌀누룩소금 계란국 3색나물무침 연어구이 만드는 법",
+          "summary": "347회 신상출시 편스토랑에서 야노시호는 만능 조미료인 쌀누룩소금을 활용한 레시피로 계란국, 3색 나물무침, 연어구이 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_e383118fd2e826fd",
+          "url": "https://seon1982.tistory.com/4170",
+          "medium": "blog",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T00:00:18+09:00"
+        },
+        {
+          "title": "핫도그 샌드위치 만들기｜소시지와 양배추로 만드는 주말 브런치",
+          "summary": "부드러운 빵에 탱글탱글한 소시지와 아삭한 양배추, 달큰하게 볶은 양파를 넣은 핫도그 샌드위치입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_9640476b1d6ce8ae",
+          "url": "https://cultureagora.tistory.com/441",
+          "medium": "blog",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T10:30:11+09:00"
+        },
+        {
+          "title": "닭고기에 이상한거 붙이는 놈이 있길래 따라 해봤습니다.",
+          "summary": "시오콘부 닭다리살구이를 만들어 보자 [재료] 닭다리살 정육 500g, 시오콘부, 감자전분, 매콤한 소스(선택) [만드는 법] 1. 닭다리살에 시오콘부를 한 줌 넣고 골고루 버무린다.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_6faad1d25877068a",
+          "url": "https://www.youtube.com/watch?v=0iHgZoDjgA8",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-27T19:39:16+09:00"
+        },
+        {
+          "title": "왜 인기 있는지 바로 납득되는 맛! 겉은 파사삭, 속은 폭신 초콜릿 딸기 머랭롤 만들기 | Meringue Roll! Chocolate Strawberry Pavlova Cake",
+          "summary": "겉은 파사삭, 속은 사르르 녹는 머랭에 초콜릿 가나슈와 마스카포네 크림, 생딸기를 채운 파블로바 머랭롤을 만들었어요.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_84ce778bbf086f59",
+          "url": "https://www.youtube.com/watch?v=2HfnweGRQtQ",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-27T20:00:39+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“혈압 떨어뜨리는 효과”… 아침에 즙 내서 한 잔 마시면 좋은 ‘쌉싸름한 셀러리’",
+          "summary": "셀러리는 특유의 쓴맛 때문에 호불호가 갈리는 채소다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_782141fdb6804691",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/27/2026112702186.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T04:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/27/2026112702181_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“도대체 얼마나 먹어야 하나”… 뱃살 빼는 데 가장 중요한 것은?",
+          "summary": "비만 치료 시 흔한 식사 조절 방법은 하루 섭취 열량을 500 kcal 줄이는 것이다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_3386fa3c5f4fdc3e",
+          "url": "https://kormedi.com/2914653/",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T14:20:00+09:00"
+        },
+        {
+          "title": "“12kg 빠지고 혈당도 안정”… 50대 여성이 ‘가장 먼저 끊은’ 두 가지 음식",
+          "summary": "싱가포르의 한 50대 여성이 다이어트 성공 후 당뇨병까지 극복한 사연이 공개됐다.최근 외신 매체 ‘홍콩 사우스차이나모닝포스트’에 따르면, 싱가포르에 거주하는 세 아이의 엄마 진진 ..",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_d469a961f5b1eafd",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/25/2026112502569.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-26T18:21:12+09:00",
+          "publishedAt": "2026-11-26T02:00:00+09:00"
+        },
+        {
+          "title": "“밥 먹을 때 ‘이 채소’ 곁들였더니?”…혈당 부담 확 줄이는 식사법은?",
+          "summary": "무와 당근, 우엉, 비트 등 뿌리채소는 식이섬유가 들어 있어 혈당 관리 식단에 활용하기 좋다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_11540547d5bfd952",
+          "url": "https://kormedi.com/2914109/",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T08:03:00+09:00"
+        },
+        {
+          "title": "해외제조업소 유효기간 연장 간소화, 건강기능식품 수입·판매업자 서류 보관 의무 줄인다",
+          "summary": "식품의약품안전처가 해외제조업소 등록 유효기간 연장 절차를 간소화하고, 건강기능식품 수입·판매업자의 불필요한 서류 보관 의무를 없애는 규제 개선에 나선다.식약처는 업계의 건의사항을 반영해 국민 건강과 직결되는 안전…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_353898b677b32b65",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=121172",
+          "medium": "news",
+          "discoveredAt": "2026-11-27T18:35:45+09:00",
+          "publishedAt": "2026-11-27T19:08:36+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "농식품 바우처, ‘복지멤버십’으로 지원 대상자 찾아 먼저 알린다",
+          "summary": "한국농수산식품유통공사(aT)와 한국사회보장정보원(원장 김현준)은 27일 서울 광진구 한국사회보장정보원 대회의실에서 농식품 바우처 지원사업 활성화와 복지멤버십을 활용한 대국민 정보 전달체계 강화를 위한 업무협약을…",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_c667b9ca3415ddb4",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36483",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T08:00:34+09:00",
+          "image": "http://www.foodicon.co.kr/news/photo/202611/36483_55573_07.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“칼로리 높지만 살은 잘 안 쪄”…자주 먹으면 건강에 좋은 5가지 먹거리",
+          "summary": "우유와 견과류는 칼로리가 높은 식품이지만 각종 영양소가 풍부해 적당량을 섭취하면 체중 관리와 건강에 도움이 되는 식품으로 꼽힌다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1f9bec24f4cf5804",
+          "url": "https://kormedi.com/2914646/",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T10:05:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/11/tip115s19060206-l-edited.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“하루에 하나가 뭐예요!”⋯김희애, 여기저기 곁들여 먹는 ‘이 것’ 동안 비결?",
+          "summary": "김희애는 올리브유를 하루에 하나씩 먹느냐는 질문에 “하나가 뭐예요!”라며 드레싱 등 다양한 용도로 활용한다고 말했다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4facfa2e88b8ecb3",
+          "url": "https://kormedi.com/2912334/",
+          "medium": "news",
+          "discoveredAt": "2026-11-27T18:35:45+09:00",
+          "publishedAt": "2026-11-27T18:09:00+09:00"
+        },
+        {
+          "title": "아침밥 자주 거르는 사람 몸에 나타나는 ‘변화 4가지’",
+          "summary": "바쁜 아침에는 식사를 거르거나 커피 한 잔으로 대신하기 쉽다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_008f23faff2ad2eb",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/27/2026112701849.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-28T17:56:19+09:00",
+          "publishedAt": "2026-11-28T06:00:00+09:00"
+        },
+        {
+          "title": "제35회 오뚜기 함태호 학술상 수상자 ‘이영승’ 단국대 교수",
+          "summary": "오뚜기함태호재단(이사장 함영준)이 28일 제주국제컨벤션센터에서 한국식품영양과학회(회장 박성수)와 공동으로 ‘제35회 오뚜기 함태호 학술상 시상식’을 열고 단국대학",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_a0ede2af754103d6",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201510",
+          "medium": "news",
+          "discoveredAt": "2026-10-29T15:55:49+09:00",
+          "publishedAt": "2026-10-29T09:19:43+09:00"
+        }
+      ]
+    }
+  }
+}
